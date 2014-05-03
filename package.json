@@ -22,5 +22,9 @@
   "bugs": {
     "url": "https://github.com/tylerpeterson/http-shutdown/issues"
   },
-  "homepage": "https://github.com/tylerpeterson/http-shutdown"
+  "homepage": "https://github.com/tylerpeterson/http-shutdown",
+  "devDependencies": {
+    "gulp": "~3.6.2",
+    "gulp-mocha": "~0.4.1"
+  }
 }
