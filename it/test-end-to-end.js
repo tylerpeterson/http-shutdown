@@ -10,6 +10,21 @@ var exec = require('child_process').exec;
 var expect = require('chai').expect;
 
 describe('http-shutdown', function () {
+  var app;
+  var server;
+  var port;
+  var connectionDfd;
+
+  beforeEach(function () {
+    connectionDfd = Q.defer();
+    app = express();
+    app.get('/', function (req, res) {
+      connectionDfd.resolve();
+      res.send(200, {value:'test'});
+    });
+    server = http.createServer(app);
+  });
+
   it.skip('should allow a port to be reused quickly', function () {
     // TODO launch an app
     // shutdown
@@ -18,15 +33,6 @@ describe('http-shutdown', function () {
   });
 
   it('isn\'t necessary when using supertest', function () {
-    var app = express();
-    var server;
-    var port;
-
-    app.get('/', function (req, res) {
-      res.send(200, {value:'test'});
-    });
-
-    server = http.createServer(app);
     return Q.ninvoke(server, 'listen').then(function () {
       debug('first server listening');
       port = server.address().port;
@@ -44,15 +50,6 @@ describe('http-shutdown', function () {
   });
 
   it("isn't necessary when using zombiejs", function () {
-    var app = express();
-    var server;
-    var port;
-
-    app.get('/', function (req, res) {
-      res.send(200, {value:'test'});
-    });
-
-    server = http.createServer(app);
     return Q.ninvoke(server, 'listen').then(function () {
       debug('first server listening');
       port = server.address().port;
@@ -75,16 +72,6 @@ describe('http-shutdown', function () {
   });
 
   it('should work around a real error', function () {
-    var app = express();
-    var server;
-    var port;
-    var connectionDfd = Q.defer();
-
-    app.get('/', function (req, res) {
-      connectionDfd.resolve();
-      res.send(200, {value:'test'});
-    });
-
     server = http.createServer(app);
     return Q.ninvoke(server, 'listen').then(function () {
       debug('first server listening');
