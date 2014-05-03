@@ -32,10 +32,15 @@ describe('http-shutdown', function () {
     // assert success
   });
 
-  it('isn\'t necessary when using supertest', function () {
+  function startServer() {
     return Q.ninvoke(server, 'listen').then(function () {
       debug('first server listening');
       port = server.address().port;
+    });
+  }
+
+  it('isn\'t necessary when using supertest', function () {
+    return startServer().then(function () {
       return Q.ninvoke(supertest(app).get('/').expect(200), 'end').then(function (res) {
         debug('successfully hit test app');
         return Q.ninvoke(server, 'close').then(function () {
@@ -50,9 +55,7 @@ describe('http-shutdown', function () {
   });
 
   it("isn't necessary when using zombiejs", function () {
-    return Q.ninvoke(server, 'listen').then(function () {
-      debug('first server listening');
-      port = server.address().port;
+    return startServer().then(function () {
       var browser = new Browser();
       return browser.visit(util.format('http://localhost:%d', port)).then(function () {
         debug('successfully hit test app');
@@ -72,11 +75,7 @@ describe('http-shutdown', function () {
   });
 
   it('should work around a real error', function () {
-    server = http.createServer(app);
-    return Q.ninvoke(server, 'listen').then(function () {
-      debug('first server listening');
-      port = server.address().port;
-
+    return startServer().then(function () {
       var processDfd = Q.defer();
       var browserProcess = exec('open ' + util.format('http://localhost:%d', port), function (error, stdout, stderr) {
         if (error !== null) {
