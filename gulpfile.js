@@ -1,10 +1,7 @@
 var gulp = require('gulp');
 var mocha = require('gulp-mocha');
 var mochaConfig = {
-    reporter: 'spec',
-    globals: {
-      expect: require('chai').expect
-    }
+    reporter: 'spec'
   };
 
 gulp.task('test', function() {
