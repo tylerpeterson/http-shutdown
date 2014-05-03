@@ -25,6 +25,8 @@
   "homepage": "https://github.com/tylerpeterson/http-shutdown",
   "devDependencies": {
     "gulp": "~3.6.2",
-    "gulp-mocha": "~0.4.1"
+    "gulp-mocha": "~0.4.1",
+    "chai": "~1.9.1",
+    "mocha": "~1.18.2"
   }
 }

@@ -1,5 +1,18 @@
 var gulp = require('gulp');
+var mocha = require('gulp-mocha');
+var mochaConfig = {
+    reporter: 'spec',
+    globals: {
+      expect: require('chai').expect
+    }
+  };
 
-gulp.task('default', function() {
-  // place code for your default task here
+gulp.task('test', function() {
+  return gulp.src(['test/test-*.js'], { read: false })
+    .pipe(mocha(mochaConfig));
+});
+
+gulp.task('verify', function() {
+  return gulp.src(['it/test-*.js'], { read: false })
+    .pipe(mocha(mochaConfig));
 });
