@@ -65,16 +65,13 @@ describe('http-shutdown', function () {
           server = http.createServer(express());
           return Q.ninvoke(server, 'listen', port).then(function () {
             debug('second server listening on same port: %d', port);
-          }, function (err) {
-            debug('second server couldn\'t start');
-            // assert EADDRINUSE error thrown
           });
         });
       });
     });
   });
 
-  it('should work around a real error', function () {
+  it('would help for servers with real browsers as clients', function () {
     return startServer().then(function () {
       var processDfd = Q.defer();
       var browserProcess = exec('open ' + util.format('http://localhost:%d', port), function (error, stdout, stderr) {
