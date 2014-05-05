@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint node: true, expr:true*/
 var express = require('express');
 var http = require('http');
 var Q = require('q');
@@ -78,7 +78,7 @@ describe('http-shutdown', function () {
       return connectionDfd.promise;
     }).then(function () {
       debug('made connection');
-      return Q.ninvoke(server, 'close').timeout(100, 'Expected Timeout')
+      return Q.ninvoke(server, 'close').timeout(100, 'Expected Timeout');
     }).then (function () {
       throw new Error('Server shutdown too quickly.');
     }, function (err) {
