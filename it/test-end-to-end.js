@@ -71,6 +71,24 @@ describe('http-shutdown', function () {
     });
   });
 
+  it("would help when clients don't close their connections", function () {
+    return startServer().then(function () {
+      debug('server started on %d', port);
+      var req = http.get(util.format('http://localhost:%d/', port), function (res) {});
+      return connectionDfd.promise;
+    }).then(function () {
+      debug('made connection');
+      return Q.ninvoke(server, 'close').timeout(100, 'Expected Timeout')
+    }).then (function () {
+      throw new Error('Server shutdown too quickly.');
+    }, function (err) {
+      debug('stopping the server gave err %s', err);
+      if (!err || !err.message || err.message !== 'Expected Timeout') {
+        throw err;
+      }
+    });
+  });
+
   it('would help for servers with real browsers as clients', function () {
     return startServer().then(function () {
       var processDfd = Q.defer();
