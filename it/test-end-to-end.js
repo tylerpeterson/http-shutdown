@@ -8,6 +8,7 @@ var Browser = require('zombie');
 var util = require('util');
 var exec = require('child_process').exec;
 var expect = require('chai').expect;
+var shutdown = require('../index');
 
 describe('http-shutdown', function () {
   var app;
@@ -23,13 +24,6 @@ describe('http-shutdown', function () {
       res.send(200, {value:'test'});
     });
     server = http.createServer(app);
-  });
-
-  it.skip('should allow a port to be reused quickly', function () {
-    // TODO launch an app
-    // shutdown
-    // launch another app on same port within timeout
-    // assert success
   });
 
   function startServer() {
@@ -87,6 +81,24 @@ describe('http-shutdown', function () {
         throw err;
       }
     });
+  });
+
+  it.skip("should allow a port to be reused quickly even when clients don't close their connections", function() {
+    var kill = shutdown(server);
+    return startServer().then(function () {
+      debug('server started on %d', port);
+      var req = http.get(util.format('http://localhost:%d/', port), function (res) {});
+      return connectionDfd.promise;
+    }).then(function () {
+      debug('made connection');
+      return Q.nfcall(kill);
+    }).then (function () {
+      debug('first server stopped listening');
+      server = http.createServer(express());
+      return Q.ninvoke(server, 'listen', port).then(function () {
+        debug('second server listening on same port: %d', port);
+      });
+    });    
   });
 
   it('would help for servers with real browsers as clients', function () {
