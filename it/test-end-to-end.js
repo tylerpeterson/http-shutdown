@@ -15,10 +15,13 @@ describe('http-shutdown', function () {
   var server;
   var port;
   var connectionDfd;
+  var killer;
 
   beforeEach(function () {
+    killer = shutdown();
     connectionDfd = Q.defer();
     app = express();
+    app.use(killer.middleware());
     app.get('/', function (req, res) {
       connectionDfd.resolve();
       res.send(200, {value:'test'});
@@ -84,14 +87,14 @@ describe('http-shutdown', function () {
   });
 
   it.skip("should allow a port to be reused quickly even when clients don't close their connections", function() {
-    var kill = shutdown(server);
+    killer.attach(server);
     return startServer().then(function () {
       debug('server started on %d', port);
       var req = http.get(util.format('http://localhost:%d/', port), function (res) {});
       return connectionDfd.promise;
     }).then(function () {
       debug('made connection');
-      return Q.nfcall(kill);
+      return Q.nfcall(killer.destroy);
     }).then (function () {
       debug('first server stopped listening');
       server = http.createServer(express());
