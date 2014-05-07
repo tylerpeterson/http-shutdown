@@ -112,12 +112,16 @@ function EphemeralAuthApp() {
     debug('allResTracker finish caught');
     if (thisAuthApp.closed) {
       debug('auth app closed.  Closing all connections');
-      allResTracker.closeAllConnections();
-      thisAuthApp.server.unref();
-      thisAuthApp.destroyCB();
+      thisAuthApp.shutdownNow();
     }
   });
 }
+
+EphemeralAuthApp.prototype.shutdownNow = function() {
+  this.allResTracker.closeAllConnections();
+  this.server.unref();
+  this.destroyCB();
+};
 
 EphemeralAuthApp.prototype.attach = function(server) {
   this.server = server;
@@ -141,9 +145,13 @@ EphemeralAuthApp.prototype.trackConnection = function (socket) {
 };
 
 EphemeralAuthApp.prototype.destroy = function (cb) {
+  debug('EphemeralAuthApp destroy');
   this.destroyCB = cb;
   if (!this.closed) {
     this.closed = true;
     this.server.close();
+    if (this.allResTracker.pendingResponses() === 0) {
+      this.shutdownNow();
+    }
   }
 };

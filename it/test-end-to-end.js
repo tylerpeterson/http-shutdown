@@ -86,7 +86,7 @@ describe('http-shutdown', function () {
     });
   });
 
-  it.skip("should allow a port to be reused quickly even when clients don't close their connections", function() {
+  it("should allow a port to be reused quickly even when clients don't close their connections", function() {
     killer.attach(server);
     return startServer().then(function () {
       debug('server started on %d', port);
