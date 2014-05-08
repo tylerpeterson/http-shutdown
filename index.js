@@ -20,28 +20,28 @@ module.exports = function () {
   };
 };
 
-function AllResTracker() {
-  if (!(this instanceof AllResTracker)) return new AllResTracker();
+function Tracker() {
+  if (!(this instanceof Tracker)) return new Tracker();
   events.EventEmitter.call(this);
   this.responses = [];
   this.connections = [];
 }
-util.inherits(AllResTracker, events.EventEmitter);
+util.inherits(Tracker, events.EventEmitter);
 
-AllResTracker.prototype.createMiddleware = function createMiddleware() {
+Tracker.prototype.createMiddleware = function createMiddleware() {
   var allResTracker = this;
   return function (req, res, next) {
     allResTracker.track(req, res, next);
   };
 };
 
-AllResTracker.prototype.track = function track(req, res, next) {
+Tracker.prototype.track = function track(req, res, next) {
   this.watchForResponseToComplete(res);
   this.watchForConnectionToClose(req.socket);
   next();
 };
 
-AllResTracker.prototype.watchForResponseToComplete = function watchForResponseToComplete(res) {
+Tracker.prototype.watchForResponseToComplete = function watchForResponseToComplete(res) {
   var allResTracker = this,
       responses = this.responses;
 
@@ -66,7 +66,7 @@ AllResTracker.prototype.watchForResponseToComplete = function watchForResponseTo
   });
 };
 
-AllResTracker.prototype.watchForConnectionToClose = function (socket) {
+Tracker.prototype.watchForConnectionToClose = function (socket) {
   var allResTracker = this,
       connections = this.connections;
 
@@ -87,14 +87,14 @@ AllResTracker.prototype.watchForConnectionToClose = function (socket) {
   });
 };
 
-AllResTracker.prototype.pendingResponses = function () {
+Tracker.prototype.pendingResponses = function () {
   return this.responses.length;
 };
 
-AllResTracker.prototype.closeAllConnections = function () {
-  debug('AllResTracker closeAllConnections');
+Tracker.prototype.closeAllConnections = function () {
+  debug('Tracker closeAllConnections');
   this.connections.forEach(function (socket) {
-    debug('AllResTracker closing a socket...');
+    debug('Tracker closing a socket...');
     socket.setKeepAlive(false);
     socket.end();
     socket.unref();
@@ -104,7 +104,7 @@ AllResTracker.prototype.closeAllConnections = function () {
 
 function EphemeralAuthApp() {
   var thisAuthApp = this,
-      allResTracker = new AllResTracker();
+      allResTracker = new Tracker();
 
   this.allResTracker = allResTracker;
   this.connections = [];
