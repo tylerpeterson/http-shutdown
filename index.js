@@ -29,9 +29,9 @@ function Tracker() {
 util.inherits(Tracker, events.EventEmitter);
 
 Tracker.prototype.createMiddleware = function createMiddleware() {
-  var allResTracker = this;
+  var tracker = this;
   return function (req, res, next) {
-    allResTracker.track(req, res, next);
+    tracker.track(req, res, next);
   };
 };
 
@@ -42,7 +42,7 @@ Tracker.prototype.track = function track(req, res, next) {
 };
 
 Tracker.prototype.watchForResponseToComplete = function watchForResponseToComplete(res) {
-  var allResTracker = this,
+  var tracker = this,
       responses = this.responses;
 
   if (responses.indexOf(res) !== -1) {
@@ -60,14 +60,14 @@ Tracker.prototype.watchForResponseToComplete = function watchForResponseToComple
     }
 
     if (responses.length === 0) {
-      debug('allResTracker emitting finish');
-      allResTracker.emit('finish');
+      debug('tracker emitting finish');
+      tracker.emit('finish');
     }
   });
 };
 
 Tracker.prototype.watchForConnectionToClose = function (socket) {
-  var allResTracker = this,
+  var tracker = this,
       connections = this.connections;
 
   if (connections.indexOf(socket) !== -1) {
@@ -104,12 +104,12 @@ Tracker.prototype.closeAllConnections = function () {
 
 function App() {
   var thisAuthApp = this,
-      allResTracker = new Tracker();
+      tracker = new Tracker();
 
-  this.allResTracker = allResTracker;
+  this.tracker = tracker;
   this.connections = [];
-  allResTracker.on('finish', function() {
-    debug('allResTracker finish caught');
+  tracker.on('finish', function() {
+    debug('tracker finish caught');
     if (thisAuthApp.closed) {
       debug('auth app closed.  Closing all connections');
       thisAuthApp.shutdownNow();
@@ -118,7 +118,7 @@ function App() {
 }
 
 App.prototype.shutdownNow = function() {
-  this.allResTracker.closeAllConnections();
+  this.tracker.closeAllConnections();
   this.server.unref();
   this.destroyCB();
 };
@@ -137,7 +137,7 @@ App.prototype.attach = function(server) {
 };
 
 App.prototype.middleware = function() {
-  return this.allResTracker.createMiddleware();
+  return this.tracker.createMiddleware();
 };
 
 App.prototype.trackConnection = function (socket) {
@@ -150,7 +150,7 @@ App.prototype.destroy = function (cb) {
   if (!this.closed) {
     this.closed = true;
     this.server.close();
-    if (this.allResTracker.pendingResponses() === 0) {
+    if (this.tracker.pendingResponses() === 0) {
       this.shutdownNow();
     }
   }
