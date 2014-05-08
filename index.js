@@ -103,12 +103,11 @@ Tracker.prototype.closeAllConnections = function () {
 };
 
 function App() {
-  var thisApp = this,
-      tracker = new Tracker();
+  var thisApp = this;
 
-  this.tracker = tracker;
+  this.tracker = new Tracker();
   this.connections = [];
-  tracker.on('finish', function() {
+  this.tracker.on('finish', function() {
     debug('tracker finish caught');
     if (thisApp.closed) {
       debug('auth app closed.  Closing all connections');
