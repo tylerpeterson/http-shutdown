@@ -103,16 +103,16 @@ Tracker.prototype.closeAllConnections = function () {
 };
 
 function App() {
-  var thisAuthApp = this,
+  var thisApp = this,
       tracker = new Tracker();
 
   this.tracker = tracker;
   this.connections = [];
   tracker.on('finish', function() {
     debug('tracker finish caught');
-    if (thisAuthApp.closed) {
+    if (thisApp.closed) {
       debug('auth app closed.  Closing all connections');
-      thisAuthApp.shutdownNow();
+      thisApp.shutdownNow();
     }
   });
 }
@@ -125,11 +125,11 @@ App.prototype.shutdownNow = function() {
 
 App.prototype.attach = function(server) {
   this.server = server;
-  thisAuthApp = this;
+  thisApp = this;
 
   server.on('connection', function (socket) {
     debug('server has a new connection', socket.remoteAddress, socket.remotePort);
-    thisAuthApp.trackConnection(socket);
+    thisApp.trackConnection(socket);
   });
   server.on('close', function (event) {
     debug('caught close event', event);
