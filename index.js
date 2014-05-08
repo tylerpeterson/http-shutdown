@@ -4,7 +4,7 @@ var debug = require('debug')('http-shutdown');
 var Q = require('q');
 /*jslint node: true */
 module.exports = function () {
-  var app = new EphemeralAuthApp();
+  var app = new App();
   return {
     middleware: function () {
       return app.middleware();
@@ -102,7 +102,7 @@ Tracker.prototype.closeAllConnections = function () {
   this.connections.splice(0, this.connections.length);
 };
 
-function EphemeralAuthApp() {
+function App() {
   var thisAuthApp = this,
       allResTracker = new Tracker();
 
@@ -117,13 +117,13 @@ function EphemeralAuthApp() {
   });
 }
 
-EphemeralAuthApp.prototype.shutdownNow = function() {
+App.prototype.shutdownNow = function() {
   this.allResTracker.closeAllConnections();
   this.server.unref();
   this.destroyCB();
 };
 
-EphemeralAuthApp.prototype.attach = function(server) {
+App.prototype.attach = function(server) {
   this.server = server;
   thisAuthApp = this;
 
@@ -136,16 +136,16 @@ EphemeralAuthApp.prototype.attach = function(server) {
   });  
 };
 
-EphemeralAuthApp.prototype.middleware = function() {
+App.prototype.middleware = function() {
   return this.allResTracker.createMiddleware();
 };
 
-EphemeralAuthApp.prototype.trackConnection = function (socket) {
+App.prototype.trackConnection = function (socket) {
   this.connections.push(socket);
 };
 
-EphemeralAuthApp.prototype.destroy = function (cb) {
-  debug('EphemeralAuthApp destroy');
+App.prototype.destroy = function (cb) {
+  debug('App destroy');
   this.destroyCB = cb;
   if (!this.closed) {
     this.closed = true;
