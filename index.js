@@ -36,14 +36,10 @@ util.inherits(Tracker, events.EventEmitter);
 Tracker.prototype.middleware = function() {
   var tracker = this;
   return function (req, res, next) {
-    tracker.track(req, res, next);
+    tracker.watchForResponseToComplete(res);
+    tracker.watchForConnectionToClose(req.socket);
+    next();
   };
-};
-
-Tracker.prototype.track = function track(req, res, next) {
-  this.watchForResponseToComplete(res);
-  this.watchForConnectionToClose(req.socket);
-  next();
 };
 
 Tracker.prototype.watchForResponseToComplete = function watchForResponseToComplete(res) {
