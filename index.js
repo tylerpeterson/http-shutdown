@@ -108,17 +108,18 @@ function App() {
   this.connections = [];
   this.tracker.on('finish', function() {
     debug('tracker finish caught');
-    if (thisApp.closed) {
-      debug('auth app closed.  Closing all connections');
-      thisApp.shutdownNow();
-    }
+    thisApp.tryShutdown();
   });
 }
 
-App.prototype.shutdownNow = function() {
-  this.tracker.closeAllConnections();
-  this.server.unref();
-  this.destroyCB();
+App.prototype.tryShutdown = function() {
+  debug('checking for shutdown conditions');
+  if (this.closed && this.tracker.pendingResponses() === 0) {
+    debug('auth app is closed and no responses pending. Shutting server down.');
+    this.tracker.closeAllConnections();
+    this.server.unref();
+    this.destroyCB();
+  }
 };
 
 App.prototype.attach = function(server) {
@@ -148,8 +149,6 @@ App.prototype.destroy = function (cb) {
   if (!this.closed) {
     this.closed = true;
     this.server.close();
-    if (this.tracker.pendingResponses() === 0) {
-      this.shutdownNow();
-    }
+    this.tryShutdown();
   }
 };
