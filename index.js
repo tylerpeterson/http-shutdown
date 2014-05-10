@@ -21,7 +21,6 @@ module.exports = function () {
 };
 
 function Tracker() {
-  if (!(this instanceof Tracker)) return new Tracker();
   events.EventEmitter.call(this);
   this.responses = [];
   this.connections = [];
