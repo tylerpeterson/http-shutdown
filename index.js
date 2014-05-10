@@ -1,6 +1,4 @@
 /*jslint node: true */
-var events = require('events');
-var util = require('util');
 var debug = require('debug')('http-shutdown');
 
 module.exports = function () {
@@ -21,17 +19,10 @@ module.exports = function () {
 };
 
 function Tracker() {
-  events.EventEmitter.call(this);
   this.responses = [];
   this.connections = [];
   var thisTracker = this;
-
-  this.on('finish', function() {
-    debug('tracker finish caught');
-    thisTracker.tryShutdown();
-  });
 }
-util.inherits(Tracker, events.EventEmitter);
 
 Tracker.prototype.middleware = function() {
   var tracker = this;
@@ -61,8 +52,8 @@ Tracker.prototype.watchForResponseToComplete = function watchForResponseToComple
     }
 
     if (responses.length === 0) {
-      debug('tracker emitting finish');
-      tracker.emit('finish');
+      debug('no responses left. Will try to shutdown.');
+      tracker.tryShutdown();
     }
   });
 };
