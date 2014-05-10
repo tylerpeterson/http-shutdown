@@ -1,8 +1,8 @@
+/*jslint node: true */
 var events = require('events');
 var util = require('util');
 var debug = require('debug')('http-shutdown');
-var Q = require('q');
-/*jslint node: true */
+
 module.exports = function () {
   var app = new App();
   return {
