@@ -4,7 +4,7 @@ var util = require('util');
 var debug = require('debug')('http-shutdown');
 
 module.exports = function () {
-  var app = new App();
+  var app = new Tracker();
   return {
     middleware: function () {
       return app.middleware();
@@ -24,10 +24,16 @@ function Tracker() {
   events.EventEmitter.call(this);
   this.responses = [];
   this.connections = [];
+  var thisTracker = this;
+
+  this.on('finish', function() {
+    debug('tracker finish caught');
+    thisTracker.tryShutdown();
+  });
 }
 util.inherits(Tracker, events.EventEmitter);
 
-Tracker.prototype.createMiddleware = function createMiddleware() {
+Tracker.prototype.middleware = function() {
   var tracker = this;
   return function (req, res, next) {
     tracker.track(req, res, next);
@@ -101,50 +107,35 @@ Tracker.prototype.closeAllConnections = function () {
   this.connections.splice(0, this.connections.length);
 };
 
-function App() {
-  var thisApp = this;
-
-  this.tracker = new Tracker();
-  this.connections = [];
-  this.tracker.on('finish', function() {
-    debug('tracker finish caught');
-    thisApp.tryShutdown();
-  });
-}
-
-App.prototype.tryShutdown = function() {
+Tracker.prototype.tryShutdown = function() {
   debug('checking for shutdown conditions');
-  if (this.closed && this.tracker.pendingResponses() === 0) {
+  if (this.closed && this.pendingResponses() === 0) {
     debug('auth app is closed and no responses pending. Shutting server down.');
-    this.tracker.closeAllConnections();
+    this.closeAllConnections();
     this.server.unref();
     this.destroyCB();
   }
 };
 
-App.prototype.attach = function(server) {
+Tracker.prototype.attach = function(server) {
   this.server = server;
-  thisApp = this;
+  thisTracker = this;
 
   server.on('connection', function (socket) {
     debug('server has a new connection', socket.remoteAddress, socket.remotePort);
-    thisApp.trackConnection(socket);
+    thisTracker.trackConnection(socket);
   });
   server.on('close', function (event) {
     debug('caught close event', event);
   });  
 };
 
-App.prototype.middleware = function() {
-  return this.tracker.createMiddleware();
-};
-
-App.prototype.trackConnection = function (socket) {
+Tracker.prototype.trackConnection = function (socket) {
   this.connections.push(socket);
 };
 
-App.prototype.destroy = function (cb) {
-  debug('App destroy');
+Tracker.prototype.destroy = function (cb) {
+  debug('Tracker destroy');
   this.destroyCB = cb;
   if (!this.closed) {
     this.closed = true;
